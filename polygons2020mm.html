@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>POLYGONS</title>
+    <script src="../javasvg/Snap.svg-0.4.1/dist/snap.svg.js"></script>
+   <script src="../javasvg/base64.js"></script>
+    <script src="../jquery/jquery-3.1.1.js"></script>
+	<script type="application/ecmascript" async="" src="../FileSaver.js"></script>
+	<script src="../utils.js"></script>
+	<script src="../dat.gui.js"></script>
+<body>
+	<svg id="svgcanvas" width="1000px" height="1000px" viewBox="0 0 1000 1000">
+
+		
+	</svg><p>
+<button onclick = "saveFile()">Save</button>
+<xmp id = "outted"></xmp>
+</body>
+<script>
+let settings = {
+  "count":100, // how many times we'll repeat our pattern
+  "colors":{ 
+    1:'#2e5c1b',
+    2:'#1a254d',
+    3:'#231f20'
+  },
+  "bgColor":'#434226', 
+  "max_size":100 ,
+  "sides":6,
+  Add:function()
+  {
+	var colors = color_Count()+1;
+	
+	settings.colors[colors] = '#FFFFFF';
+	 gui.addColor(settings.colors, colors).name('Color '+colors.toString());
+	
+  }
+
+}
+
+function color_Count()
+{
+	let count = 0;
+	for (var c in settings.colors)
+	{
+		count++;
+	}
+	return count;
+}
+	
+class App {
+  constructor(){
+    this.s = Snap("#svgcanvas");
+    this.realGo();
+  }
+  
+  realGo()
+  {
+	  
+	var c = this.s.rect(0, 0, 1000, 1000).attr({ "fill-rule":"inherit", fill: settings.bgColor}); 
+	
+	
+	var cx,cy;
+
+	var initial_size = 20;
+	
+
+	let number_passes = color_Count();
+	
+	for (var pass = 1; pass<=number_passes; pass++)
+	for (var j=0; j<settings.count; j++)
+	{
+		cx = randomIntFromInterval(0,1000);
+		cy = randomIntFromInterval(0,1000);
+		var size = randomIntFromInterval(0,settings.max_size);
+		
+		this.s.polygon(this.make_poly(settings.sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: settings.colors[pass], id:"poly"+j.toString()});
+
+	}
+	this.outputsvg();
+}
+
+ make_poly(sides, size, center_x, center_y)
+{
+	var points = [];
+	var angle_array = [];
+	var angle;
+
+
+	for (var i=0; i<sides; i++)
+	{
+		angle_array.push(randomIntFromInterval(0,359));
+	}
+
+	angle_array.sort(sortNumber);
+
+	for (i=0; i<sides; i++)
+	{
+		angle = angle_array[i];
+		points.push(this.getPoint((center_x + (Math.cos(toRadians(angle)) * size)), center_y - (Math.sin(toRadians(angle)) * size)));
+		
+	}
+	
+	return (this.formatsvgpoints(points));
+}
+
+ formatsvgpoints(inarray)
+{
+		var outarray = [];
+		inarray.forEach(function(element)
+		{
+			outarray.push(element.x);
+			outarray.push(element.y);
+		}
+		);
+		
+		return outarray;
+}
+
+ getPoint(x1,y1)
+{
+	var p = {x:x1,y:y1};
+	return p;
+}
+
+ outputsvg()
+{
+	document.getElementById("outted").innerHTML = this.s.outerSVG();
+}
+
+
+
+}
+
+function saveFile()
+{
+	var sblob = new Blob([app.s.outerSVG()], {type:"image/svg+xml;charset=utf-8"});
+	
+	saveAs(sblob, "outfile.svg");
+}
+
+app = new App();
+
+const gui = new dat.GUI();
+gui.add(settings, 'count', 1, 500);
+  // choose a color
+gui.addColor(settings.colors, '1').name('Color 1');
+  gui.addColor(settings.colors, '2').name('Color 2');
+  gui.addColor(settings.colors, '3').name('Color 3');
+  gui.add(settings,'Add');
+  gui.addColor(settings, 'bgColor').name('Background');
+    gui.add(settings, 'max_size',1,100);
+    gui.add(settings, 'sides').min(3).max(20).step(1);
+
+  // load a function
+  gui.add(app,'realGo');
+  // and open the gui so that the user can see it
+  gui.open();
+  
+</script>

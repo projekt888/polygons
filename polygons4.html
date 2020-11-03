@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>POLYGONS</title>
+    <script src="../javasvg/Snap.svg-0.4.1/dist/snap.svg.js"></script>
+   <script src="../javasvg/base64.js"></script>
+    <script src="../jquery/jquery-3.1.1.js"></script>
+	<script type="application/ecmascript" async="" src="../FileSaver.js"></script>
+	<script src="../utils.js?1</script>"></script>
+<body>
+	<svg id="svgcanvas" width="1000px" height="1000px" viewBox="0 0 1000 1000"></svg><p>
+<button onclick = "saveFile()">Save</button>
+<xmp id = "outted"></xmp>
+</body>
+<script>
+var s = Snap("#svgcanvas");
+//var g = s.group();
+var clones = [];
+realGo();
+
+/************************/
+/*Repeat the same polygon over and over*/
+/****************************************/
+
+function realGo()
+{
+	var cx,cy;
+
+	var sides = 5;
+	var size = 50;
+	
+	
+	var x,y, scalingFactor;
+	var rotate;
+	
+	cx = 0; cy = 0;
+	
+	var first_image= s.polygon(make_poly(sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: "black", id:"poly1"});
+	
+	scalingFactor = 1;
+	
+	for (var i=0; i<100; i++)
+	{
+		clones[i] = first_image.clone();
+		x = randomIntFromInterval(size,1000-size); y = randomIntFromInterval(size,1000-size);
+		rotate = randomIntFromInterval(0,359);
+		if (y<1000/2)
+		{
+			rotate =0;
+		}
+		clones[i].transform(new Snap.matrix().translate(x,y).scale(scalingFactor).rotate(rotate));	
+		clones[i].attr({fill:getRandomColor()});
+	}
+
+	first_image.transform(new Snap.matrix().translate(500,500).scale(scalingFactor));
+	
+	outputsvg();
+}
+
+
+
+function make_poly(sides, size, center_x, center_y)
+{
+	var points = [];
+	var angle_array = [];
+	var angle;
+
+
+	for (var i=0; i<sides; i++)
+	{
+		angle_array.push(randomIntFromInterval(0,359));
+	}
+
+	angle_array.sort(sortNumber);
+
+	for (var i=0; i<sides; i++)
+	{
+		angle = angle_array[i];
+		points.push(getPoint((center_x + (Math.cos(toRadians(angle)) * size)), center_y - (Math.sin(toRadians(angle)) * size)));
+		
+	}
+	
+	return (formatsvgpoints(points));
+}
+
+function formatsvgpoints(inarray)
+{
+		outarray = [];
+		inarray.forEach(function(element)
+		{
+			outarray.push(element.x);
+			outarray.push(element.y);
+		}
+		);
+		
+		return outarray;
+}
+
+function getPoint(x1,y1)
+{
+	var p = {x:x1,y:y1};
+	return p;
+}
+
+function outputsvg()
+{
+	document.getElementById("outted").innerHTML = s.outerSVG();
+}
+
+function saveFile()
+{
+	var sblob = new Blob([s.outerSVG()], {type:"image/svg+xml;charset=utf-8"});
+	
+	saveAs(sblob, "outfile.svg");
+}
+
+
+</script>
+</html>

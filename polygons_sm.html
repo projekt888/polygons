@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>POLYGONS SAMSUMG</title>
+    <script src="../javasvg/Snap.svg-0.4.1/dist/snap.svg.js"></script>
+   <script src="../javasvg/base64.js"></script>
+    <script src="../jquery/jquery-3.1.1.js"></script>
+	<script type="application/ecmascript" async="" src="../FileSaver.js"></script>
+	<script src="../utils.js"></script>
+	<script src="../dat.gui.js"></script>
+<body>
+	<svg id="svgcanvas" width="1440px" height="2560px" viewBox="0 0 1440 2560"></svg><p>
+<button onclick = "saveFile()">Save</button>
+<xmp id = "outted"></xmp>
+</body>
+<script>
+var s = Snap("#svgcanvas");
+
+var small_shapes_c = 6;
+var medium_shapes_c = 20;
+var large_shapes_c = 40;
+
+var small_size_c = 0.02; //1-50
+var medium_size_c = 0.05;
+var large_size_c = 0.10;
+
+
+
+var controls = function(){
+	this.small_shapes = small_shapes_c;
+	this.med_shapes = medium_shapes_c;
+	this.large_shapes = large_shapes_c;
+	
+	this.small_size = small_size_c;
+	this.medium_size = medium_size_c;
+	this.large_size = large_size_c;
+	
+}
+
+var c = new controls();
+var gui = new dat.GUI();
+
+
+
+var num_small_shapes = gui.add(c, 'small_shapes').min(0).max(100).step(1); // Min and max
+var num_medium_shapes = gui.add(c, 'med_shapes').min(0).max(100).step(1); // Min and max
+var num_large_shapes = gui.add(c, 'large_shapes').min(0).max(100).step(1); // Min and max
+
+var small_size = gui.add(c, 'small_size').min(0.02).max(0.25).step(0.01); // Min and max
+var medium_size = gui.add(c, 'medium_size').min(0.02).max(0.25).step(0.01); // Min and max
+var large_size = gui.add(c, 'large_size').min(0.02).max(0.25).step(0.01); // Min and max
+
+num_small_shapes.onFinishChange(function(value){generalUpdate(value)});
+num_medium_shapes.onFinishChange(function(value){generalUpdate(value)});
+num_large_shapes.onFinishChange(function(value){generalUpdate(value)});
+small_size.onFinishChange(function(value){generalUpdate(value)});
+medium_size.onFinishChange(function(value){generalUpdate(value)});
+large_size.onFinishChange(function(value){generalUpdate(value)});
+
+function generalUpdate(value)
+{
+	s.clear();
+	updateDisplayParams();
+	realGo();
+}
+
+
+function updateDisplayParams()
+{
+	  small_shapes_c = c.small_shapes;
+	  medium_shapes_c = c.med_shapes;
+	  large_shapes_c = c.large_shapes;
+	  
+	  small_size_c = c.small_size;
+	  medium_size_c = c.medium_size;
+	  large_size_c = c.large_size;
+
+}
+
+
+realGo();
+
+function realGo()
+{
+	var cx,cy;
+
+	var sides = 6;
+	var size = 40;
+	
+	var j;
+	
+	var height = document.getElementById("svgcanvas").viewBox.baseVal.height;
+	var width = document.getElementById("svgcanvas").viewBox.baseVal.width;
+	
+	console.log(small_shapes_c);
+	console.log(medium_shapes_c);
+	console.log(large_shapes_c);
+
+	size = large_size_c * width;
+
+	for (j=0; j<large_shapes_c; j++)
+	{
+		cx = randomIntFromInterval(size,width-size);
+		cy = randomIntFromInterval(size,height-size);
+		
+		s.polygon(make_poly(sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: "black", id:"poly"+j.toString()});
+	}
+	
+	size = medium_size_c * width;
+	for (j=0; j<medium_shapes_c; j++)
+	{
+		cx = randomIntFromInterval(size,width-size);
+		cy = randomIntFromInterval(size,height-size);
+		
+		s.polygon(make_poly(sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: "black", id:"poly"+j.toString()});
+	}
+	
+	size = small_size_c * width;
+	for (j=0; j<small_shapes_c; j++)
+	{
+		cx = randomIntFromInterval(size,width-size);
+		cy = randomIntFromInterval(size,height-size);
+		
+		s.polygon(make_poly(sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: "black", id:"poly"+j.toString()});
+	}
+	
+	
+	outputsvg();
+}
+
+
+
+function make_poly(sides, size, center_x, center_y)
+{
+	var points = [];
+	var angle_array = [];
+	var angle;
+
+
+	for (i=0; i<sides; i++)
+	{
+		angle_array.push(randomIntFromInterval(0,359));
+	}
+
+	angle_array.sort(sortNumber);
+
+	for (i=0; i<sides; i++)
+	{
+		angle = angle_array[i];
+		points.push(getPoint((center_x + (Math.cos(toRadians(angle)) * size)), center_y - (Math.sin(toRadians(angle)) * size)));
+		
+	}
+	
+	return (formatsvgpoints(points));
+}
+
+function formatsvgpoints(inarray)
+{
+		outarray = [];
+		inarray.forEach(function(element)
+		{
+			outarray.push(element.x);
+			outarray.push(element.y);
+		}
+		);
+		
+		return outarray;
+}
+
+function getPoint(x1,y1)
+{
+	var p = {x:x1,y:y1};
+	return p;
+}
+
+function outputsvg()
+{
+	document.getElementById("outted").innerHTML = s.outerSVG();
+}
+
+function saveFile()
+{
+	var sblob = new Blob([s.outerSVG()], {type:"image/svg+xml;charset=utf-8"});
+	
+	saveAs(sblob, "outfile.svg");
+}
+
+
+</script>
+</html>

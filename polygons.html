@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>POLYGONS</title>
+    <script src="../javasvg/Snap.svg-0.4.1/dist/snap.svg.js"></script>
+   <script src="../javasvg/base64.js"></script>
+    <script src="../jquery/jquery-3.1.1.js"></script>
+	<script type="application/ecmascript" async="" src="../FileSaver.js"></script>
+	<script src="../utils.js"></script>
+<body>
+	<svg id="svgcanvas" width="1000px" height="1000px" viewBox="0 0 1000 1000"></svg><p>
+<button onclick = "saveFile()">Save</button>
+<xmp id = "outted"></xmp>
+</body>
+<script>
+var s = Snap("#svgcanvas");
+//var g = s.group();
+//s.polygon(10,10,10,30,100,100).attr({ fill: "red", stroke: "blue", id:"poly1" });
+
+/*pick a center point at random*/
+var cx,cy;
+
+cx = randomIntFromInterval(50,400);
+cy = randomIntFromInterval(50,400);
+
+/*pick "n" points* around that center*/
+var sides = 6;
+var size = 100;
+
+var points = [];
+var angle_array = [];
+var angle;
+
+
+for (i=0; i<sides; i++)
+{
+	angle_array.push(randomIntFromInterval(0,359));
+}
+
+angle_array.sort(sortNumber);
+
+
+
+for (i=0; i<sides; i++)
+{
+	angle = angle_array[i];
+	points.push(getPoint((cx + (Math.cos(toRadians(angle)) * size)), cy - (Math.sin(toRadians(angle)) * size)));
+	
+}
+
+s.polygon(formatsvgpoints(points)).attr({ "fill-rule":"inherit", fill: "red", stroke: "blue", id:"poly1"});
+
+//s.polygon(points[0].x,points[0].y,points[1].x,points[1].y,points[2].x,points[2].y).attr({ fill: "red", stroke: "blue", id:"poly1" });
+
+outputsvg();
+
+function formatsvgpoints(inarray)
+{
+		outarray = [];
+		inarray.forEach(function(element)
+		{
+			outarray.push(element.x);
+			outarray.push(element.y);
+		}
+		);
+		
+		return outarray;
+}
+
+function getPoint(x1,y1)
+{
+	var p = {x:x1,y:y1};
+	return p;
+}
+
+function outputsvg()
+{
+	document.getElementById("outted").innerHTML = s.outerSVG();
+}
+
+function saveFile()
+{
+	var sblob = new Blob([s.outerSVG()], {type:"image/svg+xml;charset=utf-8"});
+	
+	saveAs(sblob, "outfile.svg");
+}
+
+
+</script>
+</html>
