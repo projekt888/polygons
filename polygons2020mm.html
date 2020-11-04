@@ -18,16 +18,28 @@
 <xmp id = "outted"></xmp>
 </body>
 <script>
+	
+	/*each color has:
+	1) a color
+	2) a count
+	3) a max_size
+	4) a number of sides*/
+	
+
+
+function polygon(color_code, count, maxsize, sides) {
+    this.color_code = color_code;
+    this.count = count;
+    this.maxsize = maxsize;
+    this.sides = sides;
+}
+
+
+	
 let settings = {
-  "count":100, // how many times we'll repeat our pattern
-  "colors":{ 
-    1:'#2e5c1b',
-    2:'#1a254d',
-    3:'#231f20'
-  },
+
+  "colors":[new polygon('#2e5c1b',90,100,6),new polygon('#1a254d',95,100,5),new polygon('#231f20',96,100,6)],
   "bgColor":'#434226', 
-  "max_size":100 ,
-  "sides":6,
   Add:function()
   {
 	var colors = color_Count()+1;
@@ -41,12 +53,7 @@ let settings = {
 
 function color_Count()
 {
-	let count = 0;
-	for (var c in settings.colors)
-	{
-		count++;
-	}
-	return count;
+	return settings.colors.length;
 }
 	
 class App {
@@ -68,17 +75,20 @@ class App {
 
 	let number_passes = color_Count();
 	
-	for (var pass = 1; pass<=number_passes; pass++)
-	for (var j=0; j<settings.count; j++)
+	for (var pass = 0; pass<number_passes; pass++)
 	{
-		cx = randomIntFromInterval(0,1000);
-		cy = randomIntFromInterval(0,1000);
-		var size = randomIntFromInterval(0,settings.max_size);
-		
-		this.s.polygon(this.make_poly(settings.sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: settings.colors[pass], id:"poly"+j.toString()});
+		for (var j=0; j<settings.colors[pass].count; j++)
+		{
+			cx = randomIntFromInterval(0,1000);
+			cy = randomIntFromInterval(0,1000);
+			var size = randomIntFromInterval(0,settings.colors[pass].maxsize);
+			this.s.polygon(this.make_poly(settings.colors[pass].sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: settings.colors[pass].color_code, id:"poly"+j.toString()});
 
+		}
+		
 	}
 	this.outputsvg();
+	
 }
 
  make_poly(sides, size, center_x, center_y)
@@ -143,19 +153,47 @@ function saveFile()
 app = new App();
 
 const gui = new dat.GUI();
-gui.add(settings, 'count', 1, 500);
+//gui.add(settings, 'count', 1, 500);
   // choose a color
-gui.addColor(settings.colors, '1').name('Color 1');
-  gui.addColor(settings.colors, '2').name('Color 2');
-  gui.addColor(settings.colors, '3').name('Color 3');
-  gui.add(settings,'Add');
-  gui.addColor(settings, 'bgColor').name('Background');
-    gui.add(settings, 'max_size',1,100);
-    gui.add(settings, 'sides').min(3).max(20).step(1);
+	var folder1 = gui.addFolder('Color 1');
+	folder1.addColor(settings.colors[0], 'color_code').name('Color 1');
+	folder1.add(settings.colors[0], 'maxsize',1,100);
+	folder1.add(settings.colors[0], 'sides').min(3).max(20).step(1);
+		folder1.add(settings.colors[0], 'count',1,200);
 
+// collapse folder1
+folder1.close();
+
+	var folder2 = gui.addFolder('Color 2');
+	folder2.addColor(settings.colors[1], 'color_code').name('Color 2');
+	folder2.add(settings.colors[1], 'maxsize',1,100);
+	folder2.add(settings.colors[1], 'sides').min(3).max(20).step(1);
+		folder2.add(settings.colors[1], 'count',1,200);
+
+// collapse folder1
+folder2.close();
+
+	var folder3 = gui.addFolder('Color 3');
+	folder3.addColor(settings.colors[2], 'color_code').name('Color 3');
+	folder3.add(settings.colors[2], 'maxsize',1,100);
+	folder3.add(settings.colors[2], 'sides').min(3).max(20).step(1);
+		folder3.add(settings.colors[2], 'count',1,200);
+
+// collapse folder1
+folder3.close();
+
+
+  //gui.addColor(settings.colors, '2').name('Color 2');
+  //gui.addColor(settings.colors, '3').name('Color 3');
+  //gui.add(settings,'Add');
+  gui.addColor(settings, 'bgColor').name('Background');
+  //  gui.add(settings, 'max_size',1,100);
+   // gui.add(settings, 'sides').min(3).max(20).step(1);
   // load a function
   gui.add(app,'realGo');
   // and open the gui so that the user can see it
   gui.open();
+  
+  
   
 </script>
