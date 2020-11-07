@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>POLYGONS</title>
+<title>POLYGONS: Eric Roberts</title>
     <script src="../javasvg/Snap.svg-0.4.1/dist/snap.svg.js"></script>
    <script src="../javasvg/base64.js"></script>
     <script src="../jquery/jquery-3.1.1.js"></script>
@@ -10,12 +10,14 @@
 	<script src="../utils.js"></script>
 	<script src="../dat.gui.js"></script>
 <body>
+
 	<svg id="svgcanvas" width="1000px" height="1000px" viewBox="0 0 1000 1000">
 
 		
 	</svg><p>
 <button onclick = "saveFile()">Save</button>
 <xmp id = "outted"></xmp>
+	<a href="http://ericrobertsart.com">Eric Roberts Art</a><p></p>
 </body>
 <script>
 	
@@ -38,17 +40,27 @@ function polygon(color_code, count, maxsize, sides) {
 	
 let settings = {
 
-  "colors":[new polygon('#2e5c1b',90,100,6),new polygon('#1a254d',95,100,5),new polygon('#231f20',96,100,6)],
-  "bgColor":'#434226', 
+  "colors":[new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20)),
+  new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20)),
+  new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20))],
+  "bgColor":getRandomColor(), 
   Add:function()
   {
-	var colors = color_Count()+1;
-	
-	settings.colors[colors] = '#FFFFFF';
-	 gui.addColor(settings.colors, colors).name('Color '+colors.toString());
-	
+	  this.colors.push(new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20)));
+  },
+  Remove:function()
+  {
+	  this.colors.pop();
   }
 
+}
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
 }
 
 function color_Count()
@@ -59,10 +71,11 @@ function color_Count()
 class App {
   constructor(){
     this.s = Snap("#svgcanvas");
-    this.realGo();
+    this.colors = 3;
+    this.Go();
   }
   
-  realGo()
+  Go()
   {
 	  
 	var c = this.s.rect(0, 0, 1000, 1000).attr({ "fill-rule":"inherit", fill: settings.bgColor}); 
@@ -134,12 +147,43 @@ class App {
 	return p;
 }
 
+ 
  outputsvg()
 {
 	document.getElementById("outted").innerHTML = this.s.outerSVG();
 }
 
+Add()
+{
+	/*add a color*/
+	settings.Add();
+	
+	/*add a folder*/
+	this.colors++;
+	var i = this.colors -1;
+	
+	addFolder(i);
 
+	this.Go();
+	
+}
+
+Remove()
+{
+	if (this.colors >= 1)
+	{
+		settings.Remove();
+		
+		var i = this.colors -1;
+		var fname = "Color "+i.toString();
+		
+		gui.removeFolder (fname);
+		
+		this.colors--;
+		
+		this.Go();
+	}
+}
 
 }
 
@@ -150,50 +194,60 @@ function saveFile()
 	saveAs(sblob, "outfile.svg");
 }
 
+
+function addFolder(i)
+{
+		var fname = "Color "+i.toString();
+		//console.log(fname);
+		
+		var fold = gui.addFolder(fname);
+		fold.addColor(settings.colors[i], 'color_code').name(fname);
+		fold.add(settings.colors[i], 'maxsize',1,200);
+		fold.add(settings.colors[i], 'sides').min(3).max(20).step(1);
+		fold.add(settings.colors[i], 'count',1,500);
+
+		// collapse folder1
+		fold.close();				
+	
+}
+
 app = new App();
 
-const gui = new dat.GUI();
-//gui.add(settings, 'count', 1, 500);
-  // choose a color
-	var folder1 = gui.addFolder('Color 1');
-	folder1.addColor(settings.colors[0], 'color_code').name('Color 1');
-	folder1.add(settings.colors[0], 'maxsize',1,100);
-	folder1.add(settings.colors[0], 'sides').min(3).max(20).step(1);
-		folder1.add(settings.colors[0], 'count',1,200);
-
-// collapse folder1
-folder1.close();
-
-	var folder2 = gui.addFolder('Color 2');
-	folder2.addColor(settings.colors[1], 'color_code').name('Color 2');
-	folder2.add(settings.colors[1], 'maxsize',1,100);
-	folder2.add(settings.colors[1], 'sides').min(3).max(20).step(1);
-		folder2.add(settings.colors[1], 'count',1,200);
-
-// collapse folder1
-folder2.close();
-
-	var folder3 = gui.addFolder('Color 3');
-	folder3.addColor(settings.colors[2], 'color_code').name('Color 3');
-	folder3.add(settings.colors[2], 'maxsize',1,100);
-	folder3.add(settings.colors[2], 'sides').min(3).max(20).step(1);
-		folder3.add(settings.colors[2], 'count',1,200);
-
-// collapse folder1
-folder3.close();
+	const gui = new dat.GUI();
+	//gui.add(settings, 'count', 1, 500);
+	// choose a color
+	
+	for (i=0; i<app.colors; i++)
+	{
+		addFolder(i);
+	}
+	
 
 
-  //gui.addColor(settings.colors, '2').name('Color 2');
-  //gui.addColor(settings.colors, '3').name('Color 3');
-  //gui.add(settings,'Add');
   gui.addColor(settings, 'bgColor').name('Background');
-  //  gui.add(settings, 'max_size',1,100);
-   // gui.add(settings, 'sides').min(3).max(20).step(1);
+
   // load a function
-  gui.add(app,'realGo');
+  gui.add(app,'Add');
+  gui.add(app,'Remove');
+
+
+
+  // load a function
+  gui.add(app,'Go');
   // and open the gui so that the user can see it
   gui.open();
-  
+
+
+dat.GUI.prototype.removeFolder = function(name) {
+  var folder = this.__folders[name];
+  if (!folder) {
+    return;
+  }
+  folder.close();
+  this.__ul.removeChild(folder.domElement.parentNode);
+  delete this.__folders[name];
+  this.onResize();
+}  
   
   
 </script>
