@@ -9,6 +9,11 @@
 	<script type="application/ecmascript" async="" src="../FileSaver.js"></script>
 	<script src="../utils.js"></script>
 	<script src="../dat.gui.js"></script>
+	<script src="../canvg/canvg.js"></script>
+	<!--<script type="text/javascript" src="https://unpkg.com/canvg@3.0.4/lib/umd.js"></script>-->
+	<script src="../canvg/umd.js"></script>
+
+
 <body>
 
 	<svg id="svgcanvas" width="1000px" height="1000px" viewBox="0 0 1000 1000">
@@ -17,36 +22,37 @@
 	</svg><p>
 <button onclick = "saveFile()">Save</button>
 <xmp id = "outted"></xmp>
-	<a href="http://ericrobertsart.com">Eric Roberts Art</a><p></p>
 </body>
 <script>
-	
+	//Eric Roberts 2020
 	/*each color has:
 	1) a color
 	2) a count
 	3) a max_size
-	4) a number of sides*/
+	4) a number of sides
+	5) opacity*/
 	
 
 
-function polygon(color_code, count, maxsize, sides) {
+function polygon(color_code, count, maxsize, sides,opacity) {
     this.color_code = color_code;
     this.count = count;
     this.maxsize = maxsize;
     this.sides = sides;
+    this.opacity = opacity
 }
 
 
 	
 let settings = {
 
-  "colors":[new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20)),
-  new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20)),
-  new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20))],
+  "colors":[new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20),1),
+  new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20),1),
+  new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20),1)],
   "bgColor":getRandomColor(), 
   Add:function()
   {
-	  this.colors.push(new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20)));
+	  this.colors.push(new polygon(getRandomColor(),randomIntFromInterval(1,100),randomIntFromInterval(1,100),randomIntFromInterval(3,20),1));
   },
   Remove:function()
   {
@@ -95,7 +101,7 @@ class App {
 			cx = randomIntFromInterval(0,1000);
 			cy = randomIntFromInterval(0,1000);
 			var size = randomIntFromInterval(0,settings.colors[pass].maxsize);
-			this.s.polygon(this.make_poly(settings.colors[pass].sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: settings.colors[pass].color_code, id:"poly"+j.toString()});
+			this.s.polygon(this.make_poly(settings.colors[pass].sides,size,cx,cy)).attr({ "fill-rule":"inherit", fill: settings.colors[pass].color_code, "fill-opacity":settings.colors[pass].opacity,id:"poly"+j.toString()});
 
 		}
 		
@@ -205,6 +211,7 @@ function addFolder(i)
 		fold.add(settings.colors[i], 'maxsize',1,200);
 		fold.add(settings.colors[i], 'sides').min(3).max(20).step(1);
 		fold.add(settings.colors[i], 'count',1,500);
+		fold.add(settings.colors[i], 'opacity').min(0).max(1).step(0.1);
 
 		// collapse folder1
 		fold.close();				
@@ -217,10 +224,7 @@ app = new App();
 	//gui.add(settings, 'count', 1, 500);
 	// choose a color
 	
-	for (i=0; i<app.colors; i++)
-	{
-		addFolder(i);
-	}
+	
 	
 
 
@@ -233,7 +237,24 @@ app = new App();
 
 
   // load a function
-  gui.add(app,'Go');
+  var go = gui.add(app,'Go');
+ go.__li.style.borderLeft = '6px solid #339933';
+
+	
+	
+	var ss = gui.add({ fun: captureScreenshot }, 'fun').name('take screenshot');
+	ss.__li.style.borderLeft = '3px dashed #FFFFFF';
+	
+	  var lnk = gui.add({ fun : function () {
+        window.open('http://ericrobertsart.com');
+    } }, 'fun').name('by Eric Roberts');
+    lnk.__li.style.borderLeft = '3px solid #0000FF';
+	
+	for (i=0; i<app.colors; i++)
+	{
+		addFolder(i);
+	}
+	
   // and open the gui so that the user can see it
   gui.open();
 
@@ -248,6 +269,22 @@ dat.GUI.prototype.removeFolder = function(name) {
   delete this.__folders[name];
   this.onResize();
 }  
+
+function captureScreenshot()
+{
+	captureScreenshot2();
+}
+
+async function captureScreenshot2 () {
+
+	var offscreen = new OffscreenCanvas(1000, 1000);
+    const ctx = offscreen.getContext('2d');
+	const v = await canvg.Canvg.from(ctx, app.s.outerSVG());// presets.offscreen());
+
+    await v.render();
+    const blob = await offscreen.convertToBlob();
+    saveAs(blob, "polygon.png");
+}
   
   
 </script>
